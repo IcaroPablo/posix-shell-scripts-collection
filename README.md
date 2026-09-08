@@ -10,6 +10,7 @@ junto do `rc.sh` que os chama. A divisão é por dependência, não por gosto.
     make install     liga os scripts em ~/.local/bin
     make uninstall   remove só os links que apontam para cá
     make list        mostra o que seria instalado
+    make doctor      o que estes scripts precisam, e o que falta
 
 `PREFIX` muda o destino (`make install PREFIX=/usr/local`).
 

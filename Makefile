@@ -20,10 +20,41 @@ BINDIR = $(PREFIX)/bin
 # arquivo deslocado — ficaria no caminho de busca e o uninstall não o levaria.
 DISPLACED = $(PREFIX)/share/posix-shell-scripts-collection/displaced
 
-.PHONY: all install uninstall list
+# O que os scripts daqui chamam, e nada além disso: a configuração de shell tem
+# as dependências dela, no doctor do repositório de dotfiles. Cada repositório
+# responde pelo que o próprio código invoca.
+REQUIRED = fzf mktemp
+
+# label:ferramentas — o doctor percorre esta lista. Grupo opcional só informa;
+# nenhum deles derruba o resultado, porque script que não se usa não faz falta.
+GROUPS = \
+	"ARQUIVO (compress, extract):tar gzip xz zip unzip unrar 7z" \
+	"X11 (fzfmenu, monitor, scr_shot):xrandr xdpyinfo st scrot xclip" \
+	"IMAGEM E VÍDEO (rec_gif, scrotocr):ffmpeg tesseract" \
+	"DISCO (sync_external_hd, mount_encrypted):rsync ntfs-3g doas" \
+	"BUSCA (findfile):fd fdfind"
+
+.PHONY: all install uninstall list doctor
 
 all:
-	@echo "make install | make uninstall | make list"
+	@echo "make install | make uninstall | make list | make doctor"
+
+doctor:
+	@echo "posix-shell-scripts-collection :: doctor (`uname`)"; echo ""; \
+	bad=0; printf 'OBRIGATÓRIO\n  '; \
+	for t in $(REQUIRED); do \
+		if command -v "$$t" >/dev/null 2>&1; then printf '\342\234\223 %s  ' "$$t"; \
+		else printf '\342\234\227 %s  ' "$$t"; bad=1; fi; \
+	done; printf '\n\n'; \
+	for g in $(GROUPS); do \
+		printf '%s\n  ' "$${g%%:*}"; \
+		for t in $${g#*:}; do \
+			if command -v "$$t" >/dev/null 2>&1; then printf '\342\234\223 %s  ' "$$t"; \
+			else printf '\342\234\227 %s  ' "$$t"; fi; \
+		done; printf '\n\n'; \
+	done; \
+	if [ $$bad = 0 ]; then echo "obrigatórios presentes."; else echo "falta obrigatório."; fi; \
+	exit $$bad
 
 # Não atropela o que já está lá. `ln -sf` sobrescreve calado, e o nome de um
 # script avulso não é tão improvável quanto parece: o compress daqui já disputa
