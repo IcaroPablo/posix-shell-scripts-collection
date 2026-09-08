@@ -19,6 +19,13 @@ nosso, ele reclama, pula aquele e sai com erro no fim — os outros entram. Com
 com a data no nome, em vez de apagado. Fora do `bin` de propósito: diretório de
 PATH não é lugar para guardar arquivo deslocado.
 
+O uninstall varre o `bin` do prefixo atrás de link que aponte para este
+repositório, em vez de percorrer a lista de scripts. Assim ele também recolhe o
+link de um script que já foi apagado daqui — pela outra ordem esse link deixava
+de ser enumerado e ficava para sempre. Arquivo comum, ou link para outro lugar,
+ele não toca. O que tiver sido deslocado por um `FORCE=1` continua onde está: o
+uninstall avisa, mas não restaura.
+
 Isso não é zelo teórico. O `compress` daqui disputa o nome com o `compress(1)`
 do POSIX, que várias distribuições instalam em `/usr/bin` — como o `~/.local/bin`
 vem antes no PATH, o daqui ganha. Sombra, não estrago, mas com `PREFIX=/usr/local`

@@ -43,13 +43,24 @@ install:
 		ln -sfn $(SRCDIR)/$$s "$$d" && echo "  + $$s"; \
 	done; exit $$bad
 
-# só remove o que aponta para este repositório: link alheio de mesmo nome fica
+# Varre o BINDIR atrás de link que aponte para cá, em vez de percorrer os
+# scripts do repositório. A diferença aparece quando um script é apagado daqui:
+# pela outra ordem o link instalado deixava de ser enumerado e ficava para
+# sempre, quebrado, sem install nem uninstall voltarem a olhar para ele.
+#
+# Arquivo comum, ou link para outro lugar, continua intocado.
 uninstall:
-	@for s in $(SCRIPTS); do \
-		if [ -L $(BINDIR)/$$s ] && [ "`readlink $(BINDIR)/$$s`" = "$(SRCDIR)/$$s" ]; then \
-			rm -f $(BINDIR)/$$s && echo "  - $$s"; \
-		fi; \
+	@for f in $(BINDIR)/*; do \
+		[ -L "$$f" ] || continue; \
+		case "`readlink $$f`" in \
+			$(SRCDIR)/*) rm -f "$$f" && echo "  - `basename $$f`" ;; \
+		esac; \
 	done
+	@if [ -d $(DISPLACED) ] && [ -n "`ls -A $(DISPLACED) 2>/dev/null`" ]; then \
+		echo ""; \
+		echo "  nota: `ls -A $(DISPLACED) | wc -l | tr -d ' '` arquivo(s) em $(DISPLACED)"; \
+		echo "  foram deslocados por um FORCE=1 e não voltam sozinhos."; \
+	fi
 
 list:
 	@for s in $(SCRIPTS); do echo "  $$s"; done
